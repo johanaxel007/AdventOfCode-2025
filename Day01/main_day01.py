@@ -3,6 +3,14 @@
 # Done by: johanaxel007
 
 
+from enum import StrEnum
+
+
+class Methods(StrEnum):
+    part1 = 'apply_rotation'
+    part2 = 'apply_rotation_single_tick'
+
+
 def read_input(file_name: str) -> list[str]:
     """
     Read the input file and return a list of strings.
@@ -67,7 +75,32 @@ def apply_rotation(rotation: int, current_lock_value: int, lock_size: int) -> tu
     return new_value, at_zero_count
 
 
-def calculate_password(start: int, rotations: list[str], lock_size: int = 100) -> int:
+def apply_rotation_single_tick(rotation: int, current_lock_value: int, lock_size: int) -> tuple[int, int]:
+    """
+    Apply a full rotation to the lock and return the new lock value and the number of times the lock was passed 0 using 0x434C49434B method.
+    :param rotation: The full rotation (eg: -68 or 48)
+    :param current_lock_value: The current value of the lock.
+    :param lock_size: The max bound of the lock.
+    :return: Tuple of (new_lock_value, at_zero_count)
+    """
+    new_value = current_lock_value
+    at_zero_count: int = 0
+
+    rotation_steps: int = abs(rotation)
+    rotation_direction: int = 1 if rotation > 0 else -1
+
+    while rotation_steps > 0:
+        new_value = calculate_new_lock_value(rotation_direction, new_value, lock_size)
+
+        if new_value == 0:
+            at_zero_count += 1
+
+        rotation_steps -= 1
+
+    return new_value, at_zero_count
+
+
+def calculate_password(start: int, rotations: list[str], lock_size: int = 100, method: Methods = Methods.part1) -> int:
     """
     Calculate the password by counting how many times the lock points at 0 after each rotation.
     :param start: The starting point of the lock
@@ -80,7 +113,15 @@ def calculate_password(start: int, rotations: list[str], lock_size: int = 100) -
 
     for rotation in rotations:
         rotation_value: int = parse_line(rotation)
-        new_value, at_zero_count = apply_rotation(rotation_value, current_lock_value, lock_size)
+        new_value: int = current_lock_value
+        at_zero_count: int = 0
+
+        match method:
+            case Methods.part1:
+                new_value, at_zero_count = apply_rotation(rotation_value, current_lock_value, lock_size)
+            case Methods.part2:
+                new_value, at_zero_count = apply_rotation_single_tick(rotation_value, current_lock_value, lock_size)
+
         current_lock_value = new_value
         at_zero_count_total += at_zero_count
 
@@ -92,5 +133,10 @@ if __name__ == '__main__':
     start_point: int = 50
     lock_size: int = 100
 
-    password = calculate_password(start_point, input_rotations, lock_size)
-    print(password)
+    # --- Part 1 ---
+    password_part_1 = calculate_password(start_point, input_rotations, lock_size, Methods.part1)
+    print(f"PW Part 1: {password_part_1}")
+
+    # --- Part 2 ---
+    password_part_2 = calculate_password(start_point, input_rotations, lock_size, Methods.part2)
+    print(f"PW Part 2: {password_part_2}")
