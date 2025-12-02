@@ -135,8 +135,8 @@ if __name__ == '__main__':
 
     # --- Part 1 ---
     password_part_1 = calculate_password(start_point, input_rotations, lock_size, Methods.part1)
-    print(f"PW Part 1: {password_part_1}")
+    print(f'PW Part 1: {password_part_1}')
 
     # --- Part 2 ---
     password_part_2 = calculate_password(start_point, input_rotations, lock_size, Methods.part2)
-    print(f"PW Part 2: {password_part_2}")
+    print(f'PW Part 2: {password_part_2}')
